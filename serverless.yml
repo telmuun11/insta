@@ -1,0 +1,130 @@
+
+
+service: seerlees
+
+frameworkVersion: '3'
+plugins:
+  - serverless-plugin-typescript
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region : ap-southeast-1
+  iam:
+   role:
+    statements:
+      - Effect :  Allow
+        Action:
+          - dynamodb:*
+          - sqs:*
+        Resource : "*"
+
+functions:
+  servelessFirst:
+    handler: handler.hello
+    events:
+     - httpApi:
+        path : /test
+        method : get
+  Typess:
+    handler: src/user/createUser.createUser
+    events:
+     - httpApi:
+        path : /createUser
+        method : get
+  Getitem:
+    handler: src/user/getUser.getUser
+    events:
+     - httpApi:
+        path : /getUser
+        method : get
+  Deleteitem:
+    handler: src/user/deleteUser.deleteUser
+    events:
+     - httpApi:
+        path : /deleteUser
+        method : get
+  Updateitem:
+    handler: src/user/getUser.getUser
+    events:
+     - httpApi:
+        path : /uptadeUser
+        method : get
+  Queuetest :
+    handler: src/user/uptadeUser.uptadeUser
+    events:
+    - sqs:
+        arn:  
+          Fn::GetAtt: [testqueue,Arn]
+
+
+
+resources:
+  Resources:
+    Posts:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Posts
+        AttributeDefinitions:
+          - AttributeName: postid
+            AttributeType: S
+          - AttributeName: userid
+            AttributeType: S
+        KeySchema:
+          - AttributeName: postid
+            KeyType: HASH
+          - AttributeName: userid
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: Feed
+        AttributeDefinitions:
+          - AttributeName: userid
+            AttributeType: S
+          - AttributeName: post
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userid
+            KeyType: RANGE
+          - AttributeName: postid
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1 
+        TableName: Users
+        AttributeDefinitions:
+          - AttributeName: userid
+            AttributeType: S
+          - AttributeName: username
+            AttributeType: S
+          - AttributeName: bio
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userid
+            KeyType: HASH
+          - AttributeName: username
+            KeyType: HASH
+          - AttributeName: bio
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: Follows
+        AttributeDefinitions:
+          - AttributeName: userid
+            AttributeType: S
+          - AttributeName: followid
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userid
+            KeyType: RANGE
+          - AttributeName: followid
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1 
+    testqueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: test-queue
